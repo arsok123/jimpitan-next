@@ -28,10 +28,27 @@ export default function StatistikPage() {
   const exportPDF = async () => {
     const element = document.getElementById("export-area");
     if (!element) return;
+
     const canvas = await html2canvas(element);
     const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF();
-    pdf.addImage(imgData, 'PNG', 10, 10);
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgProps = {
+      width: canvas.width,
+      height: canvas.height
+    };
+
+    const ratio = Math.min(pageWidth / imgProps.width, pageHeight / imgProps.height);
+    const imgWidth = imgProps.width * ratio;
+    const imgHeight = imgProps.height * ratio;
+
+    const marginX = (pageWidth - imgWidth) / 2;
+    const marginY = 10;
+
+    pdf.addImage(imgData, 'PNG', marginX, marginY, imgWidth, imgHeight);
     pdf.save("jimpitan.pdf");
   };
 
