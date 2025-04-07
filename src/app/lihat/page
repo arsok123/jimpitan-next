@@ -1,0 +1,56 @@
+// src/app/lihat/page.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
+
+interface Data {
+  id: string;
+  nominal: number;
+  tanggal: string;
+}
+
+export default function LihatData() {
+  const [data, setData] = useState<Data[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const querySnapshot = await getDocs(collection(db, 'jimpitan'));
+      const fetchedData: Data[] = [];
+      querySnapshot.forEach((doc) => {
+        const { nominal, tanggal } = doc.data();
+        fetchedData.push({
+          id: doc.id,
+          nominal,
+          tanggal: new Date(tanggal).toLocaleDateString('id-ID'), // Format DD-MM-YYYY
+        });
+      });
+      setData(fetchedData);
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <main className="p-4">
+      <h1 className="text-xl font-bold mb-4">Data Jimpitan</h1>
+      <table className="min-w-full border border-gray-300">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border p-2">Tanggal</th>
+            <th className="border p-2">Nominal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.id}>
+              <td className="border p-2">{item.tanggal}</td>
+              <td className="border p-2">{item.nominal}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </main>
+  );
+}
